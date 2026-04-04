@@ -34,7 +34,7 @@ bash grimoire.sh
 
 ### Claude Code Setup
 - Installs **Claude Code** (via npm or brew)
-- Adds `yolo` fish alias (`claude --dangerously-skip-permissions`)
+- Adds `claude-yolo` fish alias (`claude --dangerously-skip-permissions`)
 
 ### Connection Setup
 - Generates a named SSH key (`{local}-{remote}`)

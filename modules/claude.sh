@@ -29,16 +29,16 @@ setup_claude() {
     local fish_config="$HOME/.config/fish/config.fish"
     mkdir -p "$HOME/.config/fish"
 
-    if grep -q "function yolo" "$fish_config" 2>/dev/null; then
-        info "yolo alias already exists"
+    if grep -q "function claude-yolo" "$fish_config" 2>/dev/null; then
+        info "claude-yolo alias already exists"
     else
         cat >> "$fish_config" << 'FISHEOF'
 
-function yolo --description "Claude Code YOLO mode"
+function claude-yolo --description "Claude Code YOLO mode"
     claude --dangerously-skip-permissions $argv
 end
 FISHEOF
-        ok "Added yolo alias"
+        ok "Added claude-yolo alias"
     fi
 
     # ── Claude config directory ──
@@ -50,6 +50,6 @@ FISHEOF
 
     echo -e "${PURPLE}${BOLD}  Usage:${NC}"
     echo -e "    ${BOLD}claude${NC}       — start Claude Code"
-    echo -e "    ${BOLD}yolo${NC}         — start Claude Code (skip permissions)"
+    echo -e "    ${BOLD}claude-yolo${NC}  — start Claude Code (skip permissions)"
     echo ""
 }
