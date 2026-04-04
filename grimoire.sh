@@ -13,6 +13,7 @@ source "$GRIMOIRE_DIR/modules/detect.sh"
 source "$GRIMOIRE_DIR/modules/os.sh"
 source "$GRIMOIRE_DIR/modules/github.sh"
 source "$GRIMOIRE_DIR/modules/connect.sh"
+source "$GRIMOIRE_DIR/modules/claude.sh"
 
 # ══════════════════════════════════════════════════════
 # ── Main ─────────────────────────────────────────────
@@ -42,18 +43,20 @@ main() {
     choices=$(show_multi_menu "What would you like to set up?" \
         "OS (fish, mosh, tmux)" \
         "GitHub (gh, git config, SSH key)" \
+        "Claude Code (install, yolo alias)" \
         "Connect to a remote machine")
 
     # Check if "all" was selected
-    if [[ "$choices" == *"4"* ]]; then
-        choices="1 2 3"
+    if [[ "$choices" == *"5"* ]]; then
+        choices="1 2 3 4"
     fi
 
     for c in $choices; do
         case "$c" in
             1) setup_os "$OS" "$PKG" "$MACHINE_NAME" ;;
             2) setup_github "$MACHINE_NAME" "$PKG" ;;
-            3) setup_connection "$MACHINE_NAME" ;;
+            3) setup_claude "$MACHINE_NAME" "$PKG" ;;
+            4) setup_connection "$MACHINE_NAME" ;;
             *) err "Unknown option: $c" ;;
         esac
     done

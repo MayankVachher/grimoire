@@ -32,6 +32,10 @@ bash grimoire.sh
 - Adds `github.com` to `~/.ssh/config`
 - Uploads the key to GitHub via `gh`
 
+### Claude Code Setup
+- Installs **Claude Code** (via npm or brew)
+- Adds `yolo` fish alias (`claude --dangerously-skip-permissions`)
+
 ### Connection Setup
 - Generates a named SSH key (`{local}-{remote}`)
 - Adds the remote to `~/.ssh/config`
