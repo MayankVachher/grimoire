@@ -40,41 +40,64 @@ setup_github() {
 
     # ── SSH config for GitHub ──
     step "[4/5]" "SSH config for github.com..."
-    if grep -q "Host github.com" "$HOME/.ssh/config" 2>/dev/null; then
-        info "github.com already in SSH config"
+    local ssh_config="$HOME/.ssh/config"
+    if grep -q "Host github.com" "$ssh_config" 2>/dev/null; then
+        if grep -A3 "Host github.com" "$ssh_config" | grep -q "IdentityFile.*$key_name"; then
+            info "github.com already configured with $key_name"
+        else
+            warn "github.com exists in SSH config but points to a different key"
+            # Replace the IdentityFile line in the github.com block
+            sed -i "/Host github.com/,/^Host /{ s|IdentityFile.*|IdentityFile ~/.ssh/$key_name| }" "$ssh_config"
+            ok "Updated github.com to use $key_name"
+        fi
     else
-        cat >> "$HOME/.ssh/config" << EOF
+        cat >> "$ssh_config" << EOF
 
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/$key_name
 EOF
-        chmod 600 "$HOME/.ssh/config"
+        chmod 600 "$ssh_config"
         ok "Added github.com to SSH config"
     fi
 
     # ── Add key to GitHub ──
     step "[5/5]" "Adding key to GitHub..."
-    info "Your public key:"
-    echo ""
-    echo -e "${CYAN}  │${NC}    $(cat "$HOME/.ssh/$key_name.pub")"
-    echo ""
 
-    if gh auth status &>/dev/null; then
-        if gh ssh-key add "$HOME/.ssh/$key_name.pub" -t "$machine_name" 2>/dev/null; then
-            ok "Key added to GitHub"
-        else
-            info "Key may already be registered on GitHub"
-        fi
+    if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        ok "SSH to GitHub already works"
     else
-        warn "Not logged in to GitHub. Run: gh auth login"
-        warn "Then run: gh ssh-key add ~/.ssh/$key_name.pub -t $machine_name"
+        # Step 1: ensure gh is authed
+        if ! gh auth status &>/dev/null; then
+            info "Logging in to GitHub (open the URL on any browser, even another machine)..."
+            GH_BROWSER="echo" gh auth login -p https -h github.com --web -s admin:public_key || true
+            gh config set git_protocol ssh --host github.com
+        fi
+
+        # Step 2: upload the key
+        if gh auth status &>/dev/null; then
+            if gh ssh-key add "$HOME/.ssh/$key_name.pub" -t "$machine_name" 2>/dev/null; then
+                ok "Key added to GitHub"
+            else
+                info "Key may already be registered on GitHub"
+            fi
+        fi
+
+        # Step 3: verify — if still broken, run interactive login and retry
+        if ! ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+            warn "SSH to GitHub not working yet. Retrying login..."
+            GH_BROWSER="echo" gh auth login -p https -h github.com --web -s admin:public_key || true
+            gh config set git_protocol ssh --host github.com || true
+            gh ssh-key add "$HOME/.ssh/$key_name.pub" -t "$machine_name" 2>/dev/null || true
+        fi
+
+        if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+            ok "SSH to GitHub works"
+        else
+            err "SSH to GitHub still not working. Fix manually and re-run."
+        fi
     fi
 
     done_section
-
-    echo -e "${PURPLE}${BOLD}  Verify:${NC}"
-    echo -e "    ${BOLD}ssh -T git@github.com${NC}"
-    echo ""
 }
