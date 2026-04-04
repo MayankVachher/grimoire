@@ -14,8 +14,20 @@ bash grimoire.sh
 
 ### Windows
 
-1. Run `grimoire.ps1` as Administrator in PowerShell (installs WSL, OpenSSH, firewall rules)
-2. Open WSL, then run `bash grimoire.sh`
+1. Open PowerShell as Administrator and check your current execution policy:
+   ```powershell
+   Get-ExecutionPolicy
+   ```
+2. Allow script execution and run the setup:
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy Bypass
+   .\grimoire.ps1
+   ```
+3. Restore the original execution policy (replace `Restricted` with whatever step 1 returned):
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy Restricted
+   ```
+4. Open WSL, then run `bash grimoire.sh`
 
 ## What It Does
 

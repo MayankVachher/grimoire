@@ -1,4 +1,4 @@
-# ╔══════════════════════════════════════════════════╗
+﻿# ╔══════════════════════════════════════════════════╗
 # ║              grimoire — Windows setup            ║
 # ╚══════════════════════════════════════════════════╝
 # Run as Administrator in PowerShell
@@ -88,15 +88,16 @@ Ok "sshd running and set to auto-start"
 
 # ── Default shell ──
 Step 4 5 "Setting default SSH shell to WSL bash..."
-$bashPath = "C:\Windows\System32\bash.exe"
-if (-not (Test-Path $bashPath)) {
-    Err "bash.exe not found. Ensure WSL is installed and reboot."
-    exit 1
+$bashCmd = Get-Command bash.exe -ErrorAction SilentlyContinue
+if (-not $bashCmd) {
+    Warn "bash.exe not found. Open a terminal and run 'wsl --install', then reboot and re-run this script."
+} else {
+    $bashPath = $bashCmd.Source
+    New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value $bashPath -PropertyType String -Force | Out-Null
+    Remove-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShellCommandLine -ErrorAction SilentlyContinue
+    Restart-Service sshd
+    Ok "Default shell set to $bashPath"
 }
-New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value $bashPath -PropertyType String -Force | Out-Null
-Remove-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShellCommandLine -ErrorAction SilentlyContinue
-Restart-Service sshd
-Ok "Default shell set to $bashPath"
 
 # ── Firewall ──
 Step 5 5 "Configuring firewall for mosh..."
