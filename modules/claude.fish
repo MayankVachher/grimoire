@@ -17,8 +17,8 @@ function setup_claude
 
     # ── Install Node.js ──
     step "[2/4]" "Installing Node.js..."
-    if node --version &>/dev/null
-        info "Node.js already installed: "(node --version)
+    if command node --version &>/dev/null
+        info "Node.js already installed: "(command node --version)
     else
         nvm install lts
         ok "Installed Node.js LTS"
@@ -26,7 +26,7 @@ function setup_claude
 
     # ── Install Claude Code ──
     step "[3/4]" "Installing Claude Code..."
-    if claude --version &>/dev/null
+    if command claude --version &>/dev/null
         info "Claude Code already installed"
     else
         npm install -g @anthropic-ai/claude-code
