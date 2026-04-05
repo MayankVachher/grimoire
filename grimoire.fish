@@ -120,8 +120,13 @@ else
     ok "Installed tide"
 end
 
-fish_add_path -g ~/.local/bin
-ok "Ensured ~/.local/bin is in PATH"
+set -l fish_config "$HOME/.config/fish/config.fish"
+if not grep -q "fish_add_path.*local/bin" "$fish_config" 2>/dev/null
+    echo 'fish_add_path ~/.local/bin' >> "$fish_config"
+    ok "Added ~/.local/bin to fish PATH"
+else
+    info "~/.local/bin already in fish config"
+end
 
 warn "Restart tmux for changes to take effect: tmux kill-server"
 
