@@ -23,6 +23,8 @@ function setup_claude
         nvm install lts
         ok "Installed Node.js LTS"
     end
+    nvm use lts
+    ok "Set Node.js LTS as default"
 
     # ── Install Claude Code ──
     step "[3/4]" "Installing Claude Code..."
