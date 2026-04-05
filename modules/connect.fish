@@ -125,6 +125,8 @@ end" >> "$fish_config"
 
     done_section
 
+    warn "Restart tmux for changes to take effect: tmux kill-server"
+    echo ""
     echo $PURPLE$BOLD"  Usage:"$NC
     echo "    "$BOLD$remote_name$NC"          — connect to main session"
     echo "    "$BOLD"$remote_name myapp"$NC"    — connect to project session"
