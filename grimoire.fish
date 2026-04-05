@@ -133,9 +133,12 @@ end
 set -l fish_config "$HOME/.config/fish/config.fish"
 
 # ── Configure tide prompt ──
-# Reset old tide config
+# Reset tide config and reload defaults
 for var in (set -U --names | grep "^tide_"); set -e $var; end
 for var in (set -U --names | grep "^_tide_"); set -e $var; end
+source (functions --details _tide_sub_configure)
+_load_config lean
+_tide_finish
 
 set -l icon (show_icon_menu)
 set -U tide_os_icon "$icon"
