@@ -17,8 +17,8 @@ function setup_claude
 
     # ── Install Node.js ──
     step "[2/4]" "Installing Node.js..."
-    if command node --version &>/dev/null
-        info "Node.js already installed: "(command node --version)
+    if fish -c "node --version" &>/dev/null
+        info "Node.js already installed: "(node --version)
     else
         nvm install lts
         ok "Installed Node.js LTS"
@@ -26,12 +26,8 @@ function setup_claude
 
     # ── Install Claude Code ──
     step "[3/4]" "Installing Claude Code..."
-    if command claude --version &>/dev/null
-        info "Claude Code already installed"
-    else
-        npm install -g @anthropic-ai/claude-code
-        ok "Installed Claude Code"
-    end
+    npm install -g @anthropic-ai/claude-code
+    ok "Installed Claude Code"
 
     # ── Fish aliases ──
     step "[4/4]" "Setting up fish aliases..."
