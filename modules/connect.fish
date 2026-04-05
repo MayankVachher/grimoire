@@ -53,19 +53,17 @@ Host $remote_name
 end"
 
     if grep -q "function $remote_name" "$fish_config" 2>/dev/null
-        # Extract existing function
-        set -l existing (sed -n "/^function $remote_name /,/^end/p" "$fish_config")
-        set -l existing_str (printf '%s\n' $existing)
-        if test "$existing_str" = "$new_func"
+        # Extract existing and new to temp files, compare
+        set -l tmp_existing (mktemp)
+        set -l tmp_new (mktemp)
+        sed -n "/^function $remote_name /,/^end/p" "$fish_config" > $tmp_existing
+        echo "$new_func" > $tmp_new
+
+        if diff -q $tmp_existing $tmp_new &>/dev/null
             info "Function $remote_name already up to date"
         else
             warn "Function $remote_name exists but differs:"
-            info "Current:"
-            for line in $existing
-                info "  $line"
-            end
-            info "New:"
-            for line in (string split \n "$new_func")
+            diff --color=always $tmp_existing $tmp_new | while read -l line
                 info "  $line"
             end
             if confirm "Replace with new version?"
@@ -78,6 +76,7 @@ end"
                 info "Keeping existing function"
             end
         end
+        rm -f $tmp_existing $tmp_new
     else
         echo "" >> "$fish_config"
         echo "$new_func" >> "$fish_config"
