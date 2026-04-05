@@ -1,39 +1,22 @@
 #!/usr/bin/env fish
-# ── Claude Code Setup: nvm, node, install, fish aliases ─
+# ── Claude Code Setup: install, fish aliases ─────────
 
 function setup_claude
     set -l machine_name $argv[1]
 
     section "Setting up Claude Code on $machine_name"
 
-    # ── nvm.fish for node version management ──
-    step "[1/4]" "Setting up nvm.fish..."
-    if fisher list 2>/dev/null | grep -q nvm.fish
-        info "nvm.fish already installed"
-    else
-        fisher install jorgebucaran/nvm.fish
-        ok "Installed nvm.fish"
-    end
-
-    # ── Install Node.js ──
-    step "[2/4]" "Installing Node.js..."
-    if fish -c "node --version" &>/dev/null
-        info "Node.js already installed: "(node --version)
-    else
-        nvm install lts
-        ok "Installed Node.js LTS"
-    end
-    set -U nvm_default_version lts
-    nvm use lts
-    ok "Set Node.js LTS as default"
-
     # ── Install Claude Code ──
-    step "[3/4]" "Installing Claude Code..."
-    npm install -g @anthropic-ai/claude-code
-    ok "Installed Claude Code"
+    step "[1/2]" "Installing Claude Code..."
+    if command claude --version &>/dev/null
+        info "Claude Code already installed: "(claude --version 2>/dev/null | head -1)
+    else
+        curl -fsSL https://claude.ai/install.sh | bash
+        ok "Installed Claude Code"
+    end
 
     # ── Fish aliases ──
-    step "[4/4]" "Setting up fish aliases..."
+    step "[2/2]" "Setting up fish aliases..."
     set -l fish_config "$HOME/.config/fish/config.fish"
 
     if grep -q "function claude-yolo" "$fish_config" 2>/dev/null
