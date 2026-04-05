@@ -147,6 +147,7 @@ set -U tide_prompt_transient_enabled true
 set -U tide_prompt_pad_items false
 set -U tide_left_prompt_frame_enabled false
 set -U tide_right_prompt_frame_enabled false
+set -U tide_context_always_display true
 ok "Configured tide prompt with $icon"
 if not grep -q "fish_add_path.*local/bin" "$fish_config" 2>/dev/null
     echo 'fish_add_path ~/.local/bin' >> "$fish_config"
