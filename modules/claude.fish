@@ -23,6 +23,7 @@ function setup_claude
         nvm install lts
         ok "Installed Node.js LTS"
     end
+    set -U nvm_default_version lts
     nvm use lts
     ok "Set Node.js LTS as default"
 
