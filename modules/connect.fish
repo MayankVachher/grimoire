@@ -50,9 +50,9 @@ Host $remote_name
 function $remote_name --description \"Connect to $remote_name tmux session\"
     set -l project (test (count \$argv) -gt 0; and echo \$argv[1]; or echo \"\")
     if test -n \"\$project\"
-        mosh --no-ssh-pty $remote_name -- tmux new-session -A -s \$project -c $remote_dir\$project
+        mosh --no-ssh-pty --bind-server=any $remote_name -- tmux new-session -A -s \$project -c $remote_dir\$project
     else
-        mosh --no-ssh-pty $remote_name -- tmux new-session -A -s main -c $remote_dir
+        mosh --no-ssh-pty --bind-server=any $remote_name -- tmux new-session -A -s main -c $remote_dir
     end
 end" >> "$fish_config"
         ok "Added $remote_name function to fish config"
