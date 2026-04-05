@@ -138,6 +138,15 @@ set -U tide_os_icon "$icon"
 set -U tide_left_prompt_items os context pwd git newline character
 set -U tide_right_prompt_items cmd_duration time
 set -U tide_prompt_style lean
+set -U tide_prompt_height 2
+set -U tide_prompt_icon_connection ─
+set -U tide_prompt_color_frame_and_connection 444444
+set -U tide_prompt_color_separator_same_color 949494
+set -U tide_prompt_add_newline_before true
+set -U tide_prompt_transient_enabled true
+set -U tide_prompt_pad_items false
+set -U tide_left_prompt_frame_enabled false
+set -U tide_right_prompt_frame_enabled false
 ok "Configured tide prompt with $icon"
 if not grep -q "fish_add_path.*local/bin" "$fish_config" 2>/dev/null
     echo 'fish_add_path ~/.local/bin' >> "$fish_config"
