@@ -120,6 +120,9 @@ else
     ok "Installed tide"
 end
 
+fish_add_path -g ~/.local/bin
+ok "Ensured ~/.local/bin is in PATH"
+
 warn "Restart tmux for changes to take effect: tmux kill-server"
 
 done_section
