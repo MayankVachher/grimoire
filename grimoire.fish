@@ -123,17 +123,11 @@ end
 set -l fish_config "$HOME/.config/fish/config.fish"
 
 # ── Configure tide prompt ──
-if not grep -q "tide_left_prompt_items" "$fish_config" 2>/dev/null
-    echo '
-# Tide prompt config
-set -g tide_left_prompt_items os pwd git
-set -g tide_right_prompt_items cmd_duration time
-set -g tide_prompt_style lean
-set -g tide_prompt_height 2' >> "$fish_config"
-    ok "Configured tide prompt"
-else
-    info "Tide prompt already configured"
-end
+set -U tide_left_prompt_items os pwd git
+set -U tide_right_prompt_items cmd_duration time
+set -U tide_prompt_style lean
+set -U tide_prompt_height 2
+ok "Configured tide prompt"
 if not grep -q "fish_add_path.*local/bin" "$fish_config" 2>/dev/null
     echo 'fish_add_path ~/.local/bin' >> "$fish_config"
     ok "Added ~/.local/bin to fish PATH"
