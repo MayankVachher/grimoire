@@ -133,6 +133,10 @@ end
 set -l fish_config "$HOME/.config/fish/config.fish"
 
 # ── Configure tide prompt ──
+# Reset old tide config
+for var in (set -U --names | grep "^tide_"); set -e $var; end
+for var in (set -U --names | grep "^_tide_"); set -e $var; end
+
 set -l icon (show_icon_menu)
 set -U tide_os_icon "$icon"
 set -U tide_left_prompt_items os context pwd git newline character
