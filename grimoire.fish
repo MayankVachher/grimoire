@@ -104,7 +104,7 @@ esac
     if not grep -q "exec fish" "$HOME/.bashrc" 2>/dev/null
         echo '
 # Hand off to fish for interactive sessions
-exec fish' >> "$HOME/.bashrc"
+exec env SSH_CONNECTION="$SSH_CONNECTION" fish' >> "$HOME/.bashrc"
         ok "Added exec fish to .bashrc"
     else
         info "exec fish already in .bashrc"
