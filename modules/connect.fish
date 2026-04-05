@@ -50,13 +50,19 @@ Host $remote_name
 
     set -l fish_path (command -v fish)
     if test -n "$fish_path"
+        # Remove old default-shell if present
         if grep -q "default-shell" "$HOME/.tmux.conf" 2>/dev/null
-            sed -i.bak "s|.*default-shell.*|set-option -g default-shell $fish_path|" "$HOME/.tmux.conf"
+            sed -i.bak "/default-shell/d" "$HOME/.tmux.conf"
+            rm -f "$HOME/.tmux.conf.bak"
+        end
+        # Use default-command with login flag so fish fully initializes PATH
+        if grep -q "default-command" "$HOME/.tmux.conf" 2>/dev/null
+            sed -i.bak "s|.*default-command.*|set-option -g default-command \"$fish_path -l\"|" "$HOME/.tmux.conf"
             rm -f "$HOME/.tmux.conf.bak"
         else
-            echo "set-option -g default-shell $fish_path" >> "$HOME/.tmux.conf"
+            echo "set-option -g default-command \"$fish_path -l\"" >> "$HOME/.tmux.conf"
         end
-        ok "Set tmux default shell to fish"
+        ok "Set tmux default command to fish (login shell)"
     end
 
     # ── Bash guards (for SSH/scp compatibility) ──
