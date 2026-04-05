@@ -1,67 +1,57 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════════════╗
-# ║              grimoire — machine setup            ║
+# ║         grimoire — fish bootstrap                ║
 # ╚══════════════════════════════════════════════════╝
+#
+# Ensures fish is installed, then hands off to grimoire.fish
 
 set -e
 
 GRIMOIRE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# ── Load modules ─────────────────────────────────────
-source "$GRIMOIRE_DIR/modules/ui.sh"
-source "$GRIMOIRE_DIR/modules/detect.sh"
-source "$GRIMOIRE_DIR/modules/os.sh"
-source "$GRIMOIRE_DIR/modules/github.sh"
-source "$GRIMOIRE_DIR/modules/connect.sh"
-source "$GRIMOIRE_DIR/modules/claude.sh"
-
-# ══════════════════════════════════════════════════════
-# ── Main ─────────────────────────────────────────────
-# ══════════════════════════════════════════════════════
-main() {
-    banner
-
-    OS=$(detect_os)
-    PKG=$(detect_pkg_manager)
-
-    section "Detected environment"
-    info "OS: $OS"
-    info "Package manager: $PKG"
-
-    if [[ "$OS" == "unknown" ]]; then
-        err "Could not detect OS. Run on macOS, Linux, or WSL."
-        exit 1
+# ── Detect package manager ──
+detect_pkg_manager() {
+    if command -v brew &>/dev/null; then echo "brew"
+    elif command -v apt &>/dev/null; then echo "apt"
+    elif command -v dnf &>/dev/null; then echo "dnf"
+    elif command -v pacman &>/dev/null; then echo "pacman"
+    else echo "unknown"
     fi
-
-    if [[ "$PKG" == "unknown" ]]; then
-        err "Could not detect package manager."
-        exit 1
-    fi
-
-    MACHINE_NAME=$(prompt_default "Name this machine:" "gh0st")
-
-    choices=$(show_multi_menu "What would you like to set up?" \
-        "OS (fish, mosh, tmux)" \
-        "GitHub (gh, git config, SSH key)" \
-        "Claude Code (install, yolo alias)" \
-        "Connect to a remote machine")
-
-    # Check if "all" was selected
-    if [[ "$choices" == *"5"* ]]; then
-        choices="1 2 3 4"
-    fi
-
-    for c in $choices; do
-        case "$c" in
-            1) setup_os "$OS" "$PKG" "$MACHINE_NAME" ;;
-            2) setup_github "$MACHINE_NAME" "$PKG" ;;
-            3) setup_claude "$MACHINE_NAME" "$PKG" ;;
-            4) setup_connection "$MACHINE_NAME" ;;
-            *) err "Unknown option: $c" ;;
-        esac
-    done
-
-    complete_banner
 }
 
-main "$@"
+install_fish() {
+    local pkg_mgr="$1"
+    echo "  Installing fish..."
+    case "$pkg_mgr" in
+        brew)   brew install fish ;;
+        apt)    sudo apt update -qq && sudo apt install -y fish ;;
+        dnf)    sudo dnf install -y fish ;;
+        pacman) sudo pacman -S --noconfirm fish ;;
+        *)      echo "  ✗ Unknown package manager. Install fish manually."; exit 1 ;;
+    esac
+}
+
+set_default_shell() {
+    local fish_path="$1"
+    if [[ "$SHELL" == *"fish"* ]]; then
+        return
+    fi
+    if ! grep -q "$fish_path" /etc/shells 2>/dev/null; then
+        echo "$fish_path" | sudo tee -a /etc/shells >/dev/null
+    fi
+    chsh -s "$fish_path"
+    echo "  ✓ Default shell set to fish"
+}
+
+# ── Main ──
+if command -v fish &>/dev/null; then
+    echo "  ✓ Fish already installed"
+else
+    PKG=$(detect_pkg_manager)
+    install_fish "$PKG"
+fi
+
+fish_path="$(command -v fish)"
+set_default_shell "$fish_path"
+
+exec fish "$GRIMOIRE_DIR/grimoire.fish" "$@"

@@ -1,24 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env fish
 # ── GitHub Setup: gh, git config, SSH key ────────────
 
-GITHUB_USERNAME="MayankVachher"
+set -g GITHUB_USERNAME "MayankVachher"
 
-setup_github() {
-    local machine_name="$1"
-    local pkg_mgr="$2"
-    local email="mayankv0207+${machine_name}@gmail.com"
-    local key_name="${machine_name}-github"
+function setup_github
+    set -l machine_name $argv[1]
+    set -l email "mayankv0207+$machine_name@gmail.com"
+    set -l key_name "$machine_name-github"
 
     section "Setting up GitHub for $machine_name"
 
     # ── Install gh ──
     step "[1/5]" "Installing GitHub CLI..."
-    if command -v gh &>/dev/null; then
+    if command -q gh
         info "gh already installed"
     else
-        install_packages "$pkg_mgr" gh
+        install_packages (detect_pkg_manager) gh
         ok "Installed gh"
-    fi
+    end
 
     # ── Git config ──
     step "[2/5]" "Configuring git..."
@@ -31,80 +30,77 @@ setup_github() {
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
 
-    if [[ -f "$HOME/.ssh/$key_name" ]]; then
+    if test -f "$HOME/.ssh/$key_name"
         info "Key $key_name already exists"
     else
         ssh-keygen -t ed25519 -f "$HOME/.ssh/$key_name" -N ""
         ok "Generated $key_name"
-    fi
+    end
 
     # ── SSH config for GitHub ──
     step "[4/5]" "SSH config for github.com..."
-    local ssh_config="$HOME/.ssh/config"
-    if grep -q "Host github.com" "$ssh_config" 2>/dev/null; then
-        if grep -A3 "Host github.com" "$ssh_config" | grep -q "IdentityFile.*$key_name"; then
+    set -l ssh_config "$HOME/.ssh/config"
+    if grep -q "Host github.com" "$ssh_config" 2>/dev/null
+        if grep -A3 "Host github.com" "$ssh_config" | grep -q "IdentityFile.*$key_name"
             info "github.com already configured with $key_name"
         else
             warn "github.com exists in SSH config but points to a different key"
-            # Replace the IdentityFile line in the github.com block
             sed -i "/Host github.com/,/^Host /{ s|IdentityFile.*|IdentityFile ~/.ssh/$key_name| }" "$ssh_config"
             ok "Updated github.com to use $key_name"
-        fi
+        end
     else
-        cat >> "$ssh_config" << EOF
-
+        echo "
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/$key_name
-EOF
+    IdentityFile ~/.ssh/$key_name" >> "$ssh_config"
         chmod 600 "$ssh_config"
         ok "Added github.com to SSH config"
-    fi
+    end
 
     # ── Verify GitHub SSH ──
     step "[5/5]" "Verifying SSH to GitHub..."
 
-    local attempts=0
-    local ssh_ok=false
-    while true; do
-        if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-            ssh_ok=true
+    set -l attempts 0
+    set -l ssh_ok false
+    while true
+        if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"
+            set ssh_ok true
             break
-        fi
+        end
 
-        if [[ $attempts -ge 2 ]]; then
+        if test $attempts -ge 2
             break
-        fi
+        end
 
-        if [[ $attempts -gt 0 ]]; then
+        if test $attempts -gt 0
             warn "SSH to GitHub not working yet. Retrying..."
-        fi
+        end
 
         # Ensure gh is authed with the right scope
-        if ! gh auth status &>/dev/null; then
+        if not gh auth status &>/dev/null
             info "Logging in to GitHub (open the URL on any browser, even another machine)..."
-            if ! GH_BROWSER="echo" gh auth login -p https -h github.com --web -s admin:public_key; then
+            if not GH_BROWSER="echo" gh auth login -p https -h github.com --web -s admin:public_key
                 warn "Login failed, try again"
-            fi
-            if ! gh config set git_protocol ssh --host github.com 2>/dev/null; then
+            end
+            if not gh config set git_protocol ssh --host github.com 2>/dev/null
                 warn "Could not set git protocol to SSH"
-            fi
-        fi
+            end
+        end
 
         # Upload the key
-        if gh ssh-key add "$HOME/.ssh/$key_name.pub" -t "$machine_name" 2>/dev/null; then
+        if gh ssh-key add "$HOME/.ssh/$key_name.pub" -t "$machine_name" 2>/dev/null
             ok "Key added to GitHub"
-        fi
+        end
 
-        attempts=$((attempts + 1))
-    done
+        set attempts (math $attempts + 1)
+    end
 
-    if $ssh_ok; then
+    if test "$ssh_ok" = true
         ok "SSH to GitHub works"
     else
         err "SSH to GitHub not working. Fix manually and re-run."
-    fi
+    end
 
     done_section
-}
+end
