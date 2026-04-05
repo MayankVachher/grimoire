@@ -54,8 +54,7 @@ function done_section
 end
 
 function prompt_default
-    echo -n $CYAN"  │"$NC"  "$BOLD$argv[1]$NC" "$DIM"[$argv[2]]"$NC" " >&2
-    read -l input
+    read -l -P $CYAN"  │"$NC"  "$BOLD$argv[1]$NC" "$DIM"[$argv[2]]"$NC" " input; or exit 1
     if test -n "$input"
         echo $input
     else
@@ -82,8 +81,7 @@ function show_multi_menu
     echo $CYAN"  │"$NC"    "$PURPLE$all_idx$NC") All of the above" >&2
 
     echo $CYAN"  │"$NC >&2
-    echo -n $CYAN"  │"$NC"  "$BOLD"Choose:"$NC" " >&2
-    read -l choices
+    read -l -P $CYAN"  │"$NC"  "$BOLD"Choose:"$NC" " choices; or exit 1
     echo $choices
 end
 

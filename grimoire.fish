@@ -27,7 +27,7 @@ if test "$OS" = unknown
     exit 1
 end
 
-set MACHINE_NAME (prompt_default "Name this machine:" "gh0st")
+set MACHINE_NAME (prompt_default "Name this machine:" (hostname))
 
 # ── Fish plugins (always) ──
 section "Setting up fish plugins"
