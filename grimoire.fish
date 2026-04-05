@@ -120,6 +120,8 @@ else
     ok "Installed tide"
 end
 
+warn "Restart tmux for changes to take effect: tmux kill-server"
+
 done_section
 
 # ── Menu ──
