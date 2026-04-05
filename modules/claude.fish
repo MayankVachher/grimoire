@@ -17,7 +17,7 @@ function setup_claude
 
     # ── Install Node.js ──
     step "[2/4]" "Installing Node.js..."
-    if command -q node
+    if node --version &>/dev/null
         info "Node.js already installed: "(node --version)
     else
         nvm install lts
