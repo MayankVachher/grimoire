@@ -26,7 +26,7 @@ function setup_claude
 
     # ── Install Claude Code ──
     step "[3/4]" "Installing Claude Code..."
-    if command -q claude
+    if claude --version &>/dev/null
         info "Claude Code already installed"
     else
         npm install -g @anthropic-ai/claude-code
