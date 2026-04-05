@@ -13,20 +13,8 @@ function setup_connection
 
     set -l key_name "$local_name-$remote_name"
 
-    # ── Install mosh & tmux ──
-    step "[1/6]" "Installing mosh & tmux..."
-    set -l pkg_mgr (detect_pkg_manager)
-    for pkg in mosh tmux
-        if command -q $pkg
-            info "$pkg already installed"
-        else
-            install_packages $pkg_mgr $pkg
-            ok "Installed $pkg"
-        end
-    end
-
     # ── SSH Key ──
-    step "[2/6]" "SSH key ($key_name)..."
+    step "[1/5]" "SSH key ($key_name)..."
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
 
@@ -38,7 +26,7 @@ function setup_connection
     end
 
     # ── SSH Config ──
-    step "[3/6]" "SSH config..."
+    step "[2/5]" "SSH config..."
     if test -f "$HOME/.ssh/config"; and grep -q "Host $remote_name" "$HOME/.ssh/config"
         info "$remote_name already in SSH config"
     else
@@ -52,7 +40,7 @@ Host $remote_name
     end
 
     # ── Tmux config ──
-    step "[4/6]" "Configuring tmux..."
+    step "[3/5]" "Configuring tmux..."
     if not grep -q "set -g mouse on" "$HOME/.tmux.conf" 2>/dev/null
         echo "set -g mouse on" >> "$HOME/.tmux.conf"
         ok "Enabled tmux mouse mode"
@@ -72,7 +60,7 @@ Host $remote_name
     end
 
     # ── Bash guards (for SSH/scp compatibility) ──
-    step "[5/6]" "Fixing bash for non-interactive sessions..."
+    step "[4/5]" "Fixing bash for non-interactive sessions..."
     if test -f "$HOME/.bashrc"
         if head -5 "$HOME/.bashrc" | grep -q 'case \$- in'
             info "Non-interactive guard already present"
@@ -101,7 +89,7 @@ esac
     end
 
     # ── Fish function ──
-    step "[6/6]" "Fish connection function..."
+    step "[5/5]" "Fish connection function..."
     set -l fish_config "$HOME/.config/fish/config.fish"
 
     if grep -q "function $remote_name" "$fish_config" 2>/dev/null

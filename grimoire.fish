@@ -29,10 +29,28 @@ end
 
 set MACHINE_NAME (prompt_default "Name this machine:" (hostname))
 
-# ── Fish plugins (always) ──
-section "Setting up fish plugins"
+# ── Base packages (always) ──
+section "Setting up base packages"
 
-step "[1/2]" "Installing fisher..."
+set -l pkg_mgr (detect_pkg_manager)
+
+step "[1/4]" "Installing mosh..."
+if command -q mosh
+    info "mosh already installed"
+else
+    install_packages $pkg_mgr mosh
+    ok "Installed mosh"
+end
+
+step "[2/4]" "Installing tmux..."
+if command -q tmux
+    info "tmux already installed"
+else
+    install_packages $pkg_mgr tmux
+    ok "Installed tmux"
+end
+
+step "[3/4]" "Installing fisher..."
 if type -q fisher
     info "Fisher already installed"
 else
@@ -41,7 +59,7 @@ else
     ok "Installed fisher"
 end
 
-step "[2/2]" "Installing tide..."
+step "[4/4]" "Installing tide..."
 if fisher list | grep -q tide
     info "Tide already installed"
 else
@@ -55,7 +73,7 @@ done_section
 set choices (show_multi_menu "What would you like to set up?" \
     "GitHub (gh, git config, SSH key)" \
     "Claude Code (nvm, node, claude, yolo alias)" \
-    "Connect to a remote machine (mosh, tmux)")
+    "Connect to a remote machine")
 
 # Check if "all" was selected
 if string match -q '*4*' "$choices"
