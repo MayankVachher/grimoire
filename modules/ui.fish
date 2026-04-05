@@ -85,6 +85,11 @@ function show_multi_menu
     echo $choices
 end
 
+function confirm
+    read -l -P $CYAN"  │"$NC"  "$BOLD$argv[1]$NC" "$DIM"[y/N]"$NC" " answer; or exit 1
+    string match -qi 'y' "$answer"
+end
+
 function complete_banner
     echo $PURPLE$BOLD
     echo "  ╔══════════════════════════════════════╗"

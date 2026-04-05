@@ -43,18 +43,44 @@ Host $remote_name
     step "[3/3]" "Fish connection function..."
     set -l fish_config "$HOME/.config/fish/config.fish"
 
-    if grep -q "function $remote_name" "$fish_config" 2>/dev/null
-        info "Function $remote_name already exists in fish config"
-    else
-        echo "
-function $remote_name --description \"Connect to $remote_name tmux session\"
+    set -l new_func "function $remote_name --description \"Connect to $remote_name tmux session\"
     set -l project (test (count \$argv) -gt 0; and echo \$argv[1]; or echo \"\")
     if test -n \"\$project\"
         mosh --no-ssh-pty --bind-server=any $remote_name -- tmux new-session -A -s \$project -c $remote_dir\$project
     else
         mosh --no-ssh-pty --bind-server=any $remote_name -- tmux new-session -A -s main -c $remote_dir
     end
-end" >> "$fish_config"
+end"
+
+    if grep -q "function $remote_name" "$fish_config" 2>/dev/null
+        # Extract existing function
+        set -l existing (sed -n "/^function $remote_name /,/^end/p" "$fish_config")
+        set -l existing_str (printf '%s\n' $existing)
+        if test "$existing_str" = "$new_func"
+            info "Function $remote_name already up to date"
+        else
+            warn "Function $remote_name exists but differs:"
+            info "Current:"
+            for line in $existing
+                info "  $line"
+            end
+            info "New:"
+            for line in (string split \n "$new_func")
+                info "  $line"
+            end
+            if confirm "Replace with new version?"
+                sed -i.bak "/^function $remote_name /,/^end/d" "$fish_config"
+                rm -f "$fish_config.bak"
+                echo "" >> "$fish_config"
+                echo "$new_func" >> "$fish_config"
+                ok "Updated $remote_name function"
+            else
+                info "Keeping existing function"
+            end
+        end
+    else
+        echo "" >> "$fish_config"
+        echo "$new_func" >> "$fish_config"
         ok "Added $remote_name function to fish config"
     end
 
