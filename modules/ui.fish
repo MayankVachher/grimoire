@@ -91,6 +91,40 @@ function confirm
     string match -qi 'y' "$answer"
 end
 
+function show_icon_menu
+    set -l icons \
+        "🐙" "🦑" "🐉" "🐺" "🦊" \
+        "🔮" "⚡" "🌀" "💀" "👾" \
+        "🤖" "🎮" "🚀" "🛸" "⚔️" \
+        "🦇" "🐍" "🌊" "🔥" "💎"
+
+    echo "" >&2
+    echo $CYAN"  │"$NC >&2
+    echo $CYAN"  │"$NC"  "$BOLD"Choose a prompt icon:"$NC >&2
+    echo $CYAN"  │"$NC >&2
+
+    for i in (seq (count $icons))
+        set -l row_end ""
+        if test (math "$i % 5") -eq 0
+            set row_end "\n"$CYAN"  │"$NC
+        end
+        echo -n "    "$PURPLE$i$NC") $icons[$i]" >&2
+        if test -n "$row_end"
+            echo -e $row_end >&2
+        end
+    end
+
+    echo "" >&2
+    echo $CYAN"  │"$NC >&2
+    read -l -P $CYAN"  │"$NC"  "$BOLD"Choose [1-20]:"$NC" " choice; or exit 1
+
+    if test -n "$choice"; and test "$choice" -ge 1 2>/dev/null; and test "$choice" -le 20 2>/dev/null
+        echo $icons[$choice]
+    else
+        echo $icons[1]
+    end
+end
+
 function complete_banner
     echo $PURPLE$BOLD
     echo "  ╔══════════════════════════════════════╗"

@@ -132,11 +132,13 @@ end
 set -l fish_config "$HOME/.config/fish/config.fish"
 
 # ── Configure tide prompt ──
+set -l icon (show_icon_menu)
+set -U tide_os_icon "$icon"
 set -U tide_left_prompt_items os pwd git
 set -U tide_right_prompt_items cmd_duration time
 set -U tide_prompt_style lean
 set -U tide_prompt_height 2
-ok "Configured tide prompt"
+ok "Configured tide prompt with $icon"
 if not grep -q "fish_add_path.*local/bin" "$fish_config" 2>/dev/null
     echo 'fish_add_path ~/.local/bin' >> "$fish_config"
     ok "Added ~/.local/bin to fish PATH"
