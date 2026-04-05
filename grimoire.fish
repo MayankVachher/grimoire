@@ -99,6 +99,15 @@ esac
         rm -f "$HOME/.bashrc.bak"
         ok "Guarded cargo env sourcing"
     end
+    # Exec fish from interactive bash (for Windows OpenSSH)
+    if not grep -q "exec fish" "$HOME/.bashrc" 2>/dev/null
+        echo '
+# Hand off to fish for interactive sessions
+exec fish' >> "$HOME/.bashrc"
+        ok "Added exec fish to .bashrc"
+    else
+        info "exec fish already in .bashrc"
+    end
 else
     info "No .bashrc found, skipping"
 end
