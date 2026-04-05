@@ -8,8 +8,8 @@ function setup_claude
 
     # ── Install Claude Code ──
     step "[1/2]" "Installing Claude Code..."
-    if command claude --version &>/dev/null
-        info "Claude Code already installed: "(claude --version 2>/dev/null | head -1)
+    if test -x "$HOME/.claude/local/bin/claude"
+        info "Claude Code already installed: "($HOME/.claude/local/bin/claude --version 2>/dev/null | head -1)
     else
         curl -fsSL https://claude.ai/install.sh | bash
         ok "Installed Claude Code"
