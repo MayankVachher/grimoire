@@ -79,6 +79,7 @@ function show_multi_menu
 
     set -l all_idx (math $count + 1)
     echo $CYAN"  │"$NC"    "$PURPLE$all_idx$NC") All of the above" >&2
+    echo $CYAN"  │"$NC"    "$PURPLE"0"$NC") None" >&2
 
     echo $CYAN"  │"$NC >&2
     read -l -P $CYAN"  │"$NC"  "$BOLD"Choose:"$NC" " choices; or exit 1

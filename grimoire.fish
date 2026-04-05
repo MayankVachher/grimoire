@@ -150,6 +150,12 @@ if string match -q '*4*' "$choices"
     set choices "1 2 3"
 end
 
+# Check for "none"
+if string match -q '*0*' "$choices"
+    complete_banner
+    exit 0
+end
+
 for c in (string split ' ' $choices)
     switch $c
         case 1
