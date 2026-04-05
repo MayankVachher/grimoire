@@ -14,7 +14,7 @@ function setup_connection
     set -l key_name "$local_name-$remote_name"
 
     # ── SSH Key ──
-    step "[1/5]" "SSH key ($key_name)..."
+    step "[1/3]" "SSH key ($key_name)..."
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
 
@@ -26,7 +26,7 @@ function setup_connection
     end
 
     # ── SSH Config ──
-    step "[2/5]" "SSH config..."
+    step "[2/3]" "SSH config..."
     if test -f "$HOME/.ssh/config"; and grep -q "Host $remote_name" "$HOME/.ssh/config"
         info "$remote_name already in SSH config"
     else
@@ -39,63 +39,8 @@ Host $remote_name
         ok "Added $remote_name to SSH config"
     end
 
-    # ── Tmux config ──
-    step "[3/5]" "Configuring tmux..."
-    if not grep -q "set -g mouse on" "$HOME/.tmux.conf" 2>/dev/null
-        echo "set -g mouse on" >> "$HOME/.tmux.conf"
-        ok "Enabled tmux mouse mode"
-    else
-        info "Tmux mouse mode already enabled"
-    end
-
-    set -l fish_path (command -v fish)
-    if test -n "$fish_path"
-        # Remove old default-shell if present
-        if grep -q "default-shell" "$HOME/.tmux.conf" 2>/dev/null
-            sed -i.bak "/default-shell/d" "$HOME/.tmux.conf"
-            rm -f "$HOME/.tmux.conf.bak"
-        end
-        # Use default-command with login flag so fish fully initializes PATH
-        if grep -q "default-command" "$HOME/.tmux.conf" 2>/dev/null
-            sed -i.bak "s|.*default-command.*|set-option -g default-command \"$fish_path -l\"|" "$HOME/.tmux.conf"
-            rm -f "$HOME/.tmux.conf.bak"
-        else
-            echo "set-option -g default-command \"$fish_path -l\"" >> "$HOME/.tmux.conf"
-        end
-        ok "Set tmux default command to fish (login shell)"
-    end
-
-    # ── Bash guards (for SSH/scp compatibility) ──
-    step "[4/5]" "Fixing bash for non-interactive sessions..."
-    if test -f "$HOME/.bashrc"
-        if head -5 "$HOME/.bashrc" | grep -q 'case \$- in'
-            info "Non-interactive guard already present"
-        else
-            set -l tmp (mktemp)
-            echo '# Exit early for non-interactive sessions (required for scp/mosh)
-case $- in
-    *i*) ;;
-    *) return;;
-esac
-' > $tmp
-            cat "$HOME/.bashrc" >> $tmp
-            mv $tmp "$HOME/.bashrc"
-            ok "Added non-interactive guard to .bashrc"
-        end
-
-        # Guard cargo env if present
-        if grep -q '\.cargo/env' "$HOME/.bashrc" 2>/dev/null
-            sed -i.bak 's|^\. "\$HOME/\.cargo/env"|[ -f "$HOME/.cargo/env" ] \&\& . "$HOME/.cargo/env"|g' "$HOME/.bashrc"
-            sed -i.bak 's|^source "\$HOME/\.cargo/env"|[ -f "$HOME/.cargo/env" ] \&\& . "$HOME/.cargo/env"|g' "$HOME/.bashrc"
-            rm -f "$HOME/.bashrc.bak"
-            ok "Guarded cargo env sourcing"
-        end
-    else
-        info "No .bashrc found, skipping"
-    end
-
     # ── Fish function ──
-    step "[5/5]" "Fish connection function..."
+    step "[3/3]" "Fish connection function..."
     set -l fish_config "$HOME/.config/fish/config.fish"
 
     if grep -q "function $remote_name" "$fish_config" 2>/dev/null
@@ -131,8 +76,6 @@ end" >> "$fish_config"
 
     done_section
 
-    warn "Restart tmux for changes to take effect: tmux kill-server"
-    echo ""
     echo $PURPLE$BOLD"  Usage:"$NC
     echo "    "$BOLD$remote_name$NC"          — connect to main session"
     echo "    "$BOLD"$remote_name myapp"$NC"    — connect to project session"

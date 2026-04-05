@@ -50,7 +50,60 @@ else
     ok "Installed tmux"
 end
 
-step "[3/4]" "Installing fisher..."
+step "[3/6]" "Configuring tmux..."
+if not grep -q "set -g mouse on" "$HOME/.tmux.conf" 2>/dev/null
+    echo "set -g mouse on" >> "$HOME/.tmux.conf"
+    ok "Enabled tmux mouse mode"
+else
+    info "Tmux mouse mode already enabled"
+end
+
+set -l fish_path (command -v fish)
+if test -n "$fish_path"
+    # Remove old default-shell if present
+    if grep -q "default-shell" "$HOME/.tmux.conf" 2>/dev/null
+        sed -i.bak "/default-shell/d" "$HOME/.tmux.conf"
+        rm -f "$HOME/.tmux.conf.bak"
+    end
+    # Use default-command with login flag so fish fully initializes PATH
+    if grep -q "default-command" "$HOME/.tmux.conf" 2>/dev/null
+        sed -i.bak "s|.*default-command.*|set-option -g default-command \"$fish_path -l\"|" "$HOME/.tmux.conf"
+        rm -f "$HOME/.tmux.conf.bak"
+    else
+        echo "set-option -g default-command \"$fish_path -l\"" >> "$HOME/.tmux.conf"
+    end
+    ok "Set tmux default command to fish (login shell)"
+end
+
+step "[4/6]" "Bash guards for non-interactive sessions..."
+if test -f "$HOME/.bashrc"
+    if head -5 "$HOME/.bashrc" | grep -q 'case \$- in'
+        info "Non-interactive guard already present"
+    else
+        set -l tmp (mktemp)
+        echo '# Exit early for non-interactive sessions (required for scp/mosh)
+case $- in
+    *i*) ;;
+    *) return;;
+esac
+' > $tmp
+        cat "$HOME/.bashrc" >> $tmp
+        mv $tmp "$HOME/.bashrc"
+        ok "Added non-interactive guard to .bashrc"
+    end
+
+    # Guard cargo env if present
+    if grep -q '\.cargo/env' "$HOME/.bashrc" 2>/dev/null
+        sed -i.bak 's|^\. "\$HOME/\.cargo/env"|[ -f "$HOME/.cargo/env" ] \&\& . "$HOME/.cargo/env"|g' "$HOME/.bashrc"
+        sed -i.bak 's|^source "\$HOME/\.cargo/env"|[ -f "$HOME/.cargo/env" ] \&\& . "$HOME/.cargo/env"|g' "$HOME/.bashrc"
+        rm -f "$HOME/.bashrc.bak"
+        ok "Guarded cargo env sourcing"
+    end
+else
+    info "No .bashrc found, skipping"
+end
+
+step "[5/6]" "Installing fisher..."
 if type -q fisher
     info "Fisher already installed"
 else
@@ -59,7 +112,7 @@ else
     ok "Installed fisher"
 end
 
-step "[4/4]" "Installing tide..."
+step "[6/6]" "Installing tide..."
 if fisher list | grep -q tide
     info "Tide already installed"
 else
