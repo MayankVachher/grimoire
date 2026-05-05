@@ -92,6 +92,7 @@ function confirm
 end
 
 function show_icon_menu
+    set -l default $argv[1]
     set -l icons \
         "🐙" "🦑" "🐉" "🐺" "🦊" \
         "🔮" "⚡" "🌀" "💀" "👾" \
@@ -116,10 +117,16 @@ function show_icon_menu
 
     echo "" >&2
     echo $CYAN"  │"$NC >&2
-    read -l -P $CYAN"  │"$NC"  "$BOLD"Choose [1-20]:"$NC" " choice; or exit 1
+    if test -n "$default"
+        read -l -P $CYAN"  │"$NC"  "$BOLD"Choose [1-20]:"$NC" "$DIM"[$default]"$NC" " choice; or exit 1
+    else
+        read -l -P $CYAN"  │"$NC"  "$BOLD"Choose [1-20]:"$NC" " choice; or exit 1
+    end
 
     if test -n "$choice"; and test "$choice" -ge 1 2>/dev/null; and test "$choice" -le 20 2>/dev/null
         echo $icons[$choice]
+    else if test -n "$default"
+        echo $default
     else
         echo $icons[1]
     end
